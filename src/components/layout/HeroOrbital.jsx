@@ -19,11 +19,12 @@ export function HeroOrbital({ activeSection, onSectionChange }) {
   const controls = useAnimation();
 
   useEffect(() => {
+    let animation;
     if (!isHovered) {
-      controls.start({
-        rotate: 360,
+      animation = controls.start({
+        rotate: rotation.get() + 360,
         transition: {
-          duration: 40,
+          duration: 120, // Calmer, slower physics
           ease: "linear",
           repeat: Infinity,
         }
@@ -31,13 +32,15 @@ export function HeroOrbital({ activeSection, onSectionChange }) {
     } else {
       controls.stop();
     }
-  }, [isHovered, controls]);
+    return () => {
+      if (animation) controls.stop();
+    };
+  }, [isHovered, controls, rotation]);
 
   // Dynamic, perfectly responsive radius calculation
   const getRadius = () => {
     if (typeof window !== 'undefined') {
       const minDimension = Math.min(window.innerWidth, window.innerHeight);
-      // Max radius = half of the smallest dimension minus padding for the nodes
       let maxAllowedRadius = (minDimension / 2) - 100;
 
       // Cap sizes to maintain aesthetics
@@ -60,24 +63,25 @@ export function HeroOrbital({ activeSection, onSectionChange }) {
   return (
     <div className="relative w-full h-screen flex items-center justify-center overflow-hidden">
       {/* Background ambient light */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-navy-800/50 via-navy-900 to-navy-900 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-navy-800/40 via-navy-900 to-navy-900 pointer-events-none" />
 
-      {/* Central Profile Element (Image Only) */}
+      {/* Central Profile Element */}
       <motion.div
         className="absolute z-20 flex items-center justify-center"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1, ease: "easeOut" }}
+        transition={{ duration: 1.5, type: "spring", bounce: 0.2 }}
       >
-        <div className="relative w-32 h-32 md:w-48 md:h-48 rounded-full p-1 bg-gradient-to-tr from-cyan-500 to-indigo-500 glow-cyan">
-          <div className="w-full h-full rounded-full overflow-hidden bg-navy-900 border-2 border-navy-900 relative">
+        <div className="relative w-36 h-36 md:w-48 md:h-48 rounded-full p-1 bg-gradient-to-tr from-cyan-500/30 to-indigo-500/30">
+          <div className="absolute inset-0 rounded-full border border-cyan-400/20 backdrop-blur-sm" />
+          <div className="w-full h-full rounded-full overflow-hidden bg-navy-900 relative shadow-inner z-10 border-4 border-navy-900">
             <img
               src="/profile.jpg"
               alt="Systems Engineer"
-              className="w-full h-full object-cover opacity-90 absolute inset-0"
+              className="w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"; // fallback futuristic image
+                e.target.src = "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80";
               }}
             />
           </div>
